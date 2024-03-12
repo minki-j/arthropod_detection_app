@@ -3,3 +3,6 @@ Pillow
 Requests
 streamlit==1.31.1
 ultralytics==8.1.6
+opencv-python
+libgl1-mesa-glx
+libglib2.0-0
