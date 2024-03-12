@@ -8,7 +8,7 @@ from ultralytics.utils.plotting import Annotator, colors
 import json
 
 
-def draw_annotations(coco_annotations, image_path, confidence_threshold=0.1):
+def draw_annotations(coco_annotations, image_path, confidence_threshold=0.7):
     print("confidence_threshold: ", confidence_threshold)
 
     image = Image.open(image_path)
