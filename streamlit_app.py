@@ -69,7 +69,7 @@ def remove_overlap(coco_annotations):
         )
 
         object_indices_to_remove.extend(iou)
-    print("object_indices_to_remove", object_indices_to_remove)
+
     coco_annotations = [
         object
         for i, object in enumerate(coco_annotations)
@@ -126,8 +126,6 @@ if "coco_annoataions" not in st.session_state:
     st.session_state["confidence_threshold"] = 0.7
     st.session_state["default_image_path"] = []
     st.session_state["coco_annoataions_overlap_removed"] = []
-else:
-    print("<Session state already exists>")
 
 
 ##########
@@ -150,7 +148,6 @@ if uploaded_file is None and (
     st.session_state["image_path"] != st.session_state["default_image_path"]
     or st.session_state["image_path"] == []
 ):
-    print("\033[91m" + "No image uploaded. Using default image." + "\033[0m")
     # Default image.
     path = "./sample_images"
     default_img_paths = glob.glob(path + "/*.jpg")
@@ -185,7 +182,16 @@ if uploaded_file is None:
         st.session_state["image_path"] = st.session_state["default_image_path"]
 else:
     if st.session_state["image_path"] != uploaded_file:
-        print("\033[91m" + "1. CALLING CLOUD INFERNECE " + "\033[0m")
+        print("\033[91m" + "CALLING CLOUD INFERNECE " + "\033[0m")
+
+        # Create placeholders
+        text_placeholder = st.empty()
+        progress_placeholder = st.empty()
+
+        text_placeholder.write(
+            'AI is detecting arthropods in your image. On average, it takes about 30 seconds.'
+        )
+        progress_bar = progress_placeholder.progress(0)
 
         # Inference through Modal cloud
         byte_arr = BytesIO()
@@ -193,12 +199,20 @@ else:
         image.save(byte_arr, format="PNG")
         byte_arr = byte_arr.getvalue()
 
+        progress_bar.progress(50)
+
         modal_url = "https://jung0072--sahi-inference-predict.modal.run"
         response = requests.post(f"{modal_url}", data=byte_arr)
+
+        progress_bar.progress(100)
 
         coco_annotation = json.loads(response.content)
         st.session_state["coco_annoataions"] = coco_annotation
         st.session_state["image_path"] = uploaded_file
+
+        # Clear placeholders
+        text_placeholder.empty()
+        progress_placeholder.empty()
 
 ## Display total number for each category
 st.sidebar.write("### Total number of each category")
@@ -258,4 +272,4 @@ else:
         confidence_threshold=confidence_threshold,
     )
 
-st.image(result_image, use_column_width="auto")
+st.image(result_image, use_column_width=True)
